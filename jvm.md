@@ -72,27 +72,45 @@ Object y = x;
 Эта **загрузка** обычно выполняется **«по требованию»**, поскольку она не происходит до тех пор, пока программа не вызовет класс.
 **Класс с именем может быть загружен только один раз данным загрузчиком классов.**
 
-При запуске JVM, используются три загрузчика классов:
-* Bootstrap class loader (Загрузчик класса Bootstrap)
-* Extensions class loader (Загрузчик класса расширений)
-* System class loader (Системный загрузчик классов)
+JVM имеет 3 встроенных загрузчика классов:
 
-**Загрузчик класса Bootstrap** загружает основные библиотеки Java, расположенные в папке `<JAVA_HOME>/jre/lib`. 
-Этот загрузчик является частью ядра JVM, написан на нативном коде.
+- Bootstrap ClassLoader
+- Platform/Extension ClassLoader
+- Application/System ClassLoader
 
-**Загрузчик класса расширений** загружает код в каталоги расширений 
-(`<JAVA_HOME>/jre/lib/ext`, или любой другой каталог, указанный системным свойством `java.ext.dirs`).
+Часть исходного кода, подтверждающая этот факт:
 
-**Системный загрузчик** загружает код, найденный в `java.class.path`, который сопоставляется с переменной среды `CLASSPATH`.
-Это реализуется классом `sun.misc.Launcher$AppClassLoader`.
+```java
+package jdk.internal.loader;
+...
+public class ClassLoaders {
+    ...
+    // the built-in class loaders
+    private static final BootClassLoader BOOT_LOADER;
+    private static final PlatformClassLoader PLATFORM_LOADER;
+    private static final AppClassLoader APP_LOADER;
+    ...
+}
+```
 
-Загрузчик классов выполняет три основных действия в строгом порядке: 
-* Загрузка: находит и импортирует двоичные данные для типа. 
-* Связывание: выполняет проверку, подготовку и (необязательно) разрешение. 
-    - Проверка: обеспечивает правильность импортируемого типа. 
-    - Подготовка: выделяет память для переменных класса и инициализация памяти значениями по умолчанию. 
-    - Разрешение: преобразует символические ссылки из типа в прямые ссылки. 
-* Инициализация: вызывает код Java, который инициализирует переменные класса их правильными начальными значениями.
+Условно они делятся на 2 группы:
+
+- Bootstrap ClassLoader - поставляется с JVM в виде нативного кода, недоступен в рантайме
+- ClassLoader objects (Platform ClassLoader и Application ClassLoader)  - объекты типа java.lang.ClassLoader, JVM создает их в момент запуска
+
+_Bootstrap ClassLoader_ написан на C/C++ и скомпилирован в нативный код под конкретную OS и архитектуру CPU. Компиляция в наивный код необходима для того, чтобы загрузить core Java classes из модуля `java.base`, необходимые для работы самой JVM (до Java 9 core классы загружались все разом из “runtime jar” - `rt.jar`, что было не оптимально). В отличие от ClassLoader objects, у него нет родительского класса и при попытке обратиться к нему возвращается `null` (Bootstrap ClassLoader - это нативный код, а не Java объект).
+
+_ClassLoader objects_ подгружают классы динамически, в рантайме. Они являются наследниками класса `jdk.internal.loader.BuiltinClassLoader`, который, в свою очередь, наследуется от абстрактного класса `java.lang.ClassLoader` (через `java.security.SecureClassLoader`) и переопределяет (overrides) метод `protected Class<?> findClass(String name)`.
+
+_Platform ClassLoader_ загружает модули платформы и расширений JDK, которые не являются частью модуля `java.base` (например, `java.sql`, `java.desktop`, `java.xml.crypto` и пр.). Его родительский загрузчик классов - Bootstrap ClassLoader.
+
+Application ClassLoader загружает классы из classpath (флаг `-cp`) и module path (флаг `-p`, Java 9+), которые относятся непосредственно к нашему приложению: `.jar` и `.class` файлы, а также зависимости. Его родительский загрузчик классов - Platform ClassLoader.
+
+```java
+ClassLoader appLoader = MyClass.class.getClassLoader(); // AppClassLoader
+ClassLoader extLoader = appLoader.getParent();          // PlatformClassLoader
+ClassLoader bootLoader = extLoader.getParent();         // null — Bootstrap is native, no Java object
+```
 
 **Пользовательский загрузчик классов**
 
