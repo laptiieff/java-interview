@@ -1,10 +1,11 @@
 ## JVM
-+ [За что отвечает JVM](jvm.md#За-что-отвечает-JVM)
-+ [Classloader](jvm.md#Classloader)
-+ [Области данных времени выполнения](jvm.md#Области-данных-времени-выполнения)
-+ [Frames](jvm.md#Frames)
-+ [Execution Engine](jvm.md#Execution-Engine)
-+ [Полезные ссылки](jvm.md#Полезные-ссылки)
++ [За что отвечает JVM](jvm.md#за-что-отвечает-jvm)
++ [Classloader](jvm.md#classloader)
++ [Области данных времени выполнения](jvm.md#области-данных-времени-выполнения)
++ [Frames](jvm.md#frames)
++ [Execution Engine](jvm.md#execution-engine)
++ [Garbage Collector](jvm.md#garbage-collector)
++ [Полезные ссылки](jvm.md#полезные-ссылки)
 
 ## За что отвечает _JVM_:
 
@@ -182,7 +183,7 @@ JVM Memory
 - байткод методов
 - Runtime Constant Pool - константы, строковые литералы, ссылки на методы/поля
 - static-поля классов
-- информацию для method resolution (например, [vtables](./oop.md#что-такое-статическое-и-динамическое-связывание))
+- информацию для method resolution (например, [vtables](oop.md#что-такое-статическое-и-динамическое-связывание))
 
 Method Area - это спицификация, абстрактное понятие. Детали реализации зависят от конкретной JVM.
 
