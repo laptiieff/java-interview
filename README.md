@@ -51,6 +51,7 @@
 + [Области данных времени выполнения](jvm.md#Области-данных-времени-выполнения)
 + [Frames](jvm.md#Frames)
 + [Execution Engine](jvm.md#Execution-Engine)
++ [Garbage Collector](jvm.md#garbage-collector)
 + [Полезные ссылки](jvm.md#Полезные-ссылки)
 
 [к оглавлению](#Вопросы-для-собеседования-на-java-developer)
